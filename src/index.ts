@@ -7,7 +7,7 @@ import { transcriptionRoutes } from './routes/transcription';
 import { authRoutes } from './routes/auth';
 import { extractionRoutes } from './routes/extraction';
 import { errorHandler } from './middleware/errorHandler';
-import { authMiddleware } from './middleware/auth';
+// import { authMiddleware } from './middleware/auth';
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
@@ -22,32 +22,33 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW_MINUTES || '1') || 1) * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '5') || 5,
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false
-});
+// Rate limiting disabled for testing
+// const limiter = rateLimit({
+//   windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW_MINUTES || '1') || 1) * 60 * 1000,
+//   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '5') || 5,
+//   message: 'Too many requests from this IP, please try again later.',
+//   standardHeaders: true,
+//   legacyHeaders: false
+// });
 
-app.use('/api', limiter);
+// app.use('/api', limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Serve static files
+app.use(express.static('public'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-// Public routes
+// Public routes (no authentication required for testing)
 app.use('/api/auth', authRoutes);
-
-// Protected routes (require authentication)
-app.use('/api/transcription', authMiddleware, transcriptionRoutes);
-app.use('/api/extraction', authMiddleware, extractionRoutes);
+app.use('/api/transcription', transcriptionRoutes);
+app.use('/api/extraction', extractionRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

@@ -4,7 +4,7 @@ A comprehensive speech-to-text and data extraction system designed specifically 
 
 ## Features
 
-- 🎤 **Speech-to-Text Transcription**: Support for multiple models (OpenAI Whisper, Google Speech-to-Text, Azure)
+- 🎤 **Speech-to-Text Transcription**: Support for multiple models (Fal.ai Whisper, Google Speech-to-Text, Azure)
 - 🔍 **Intelligent Data Extraction**: AI-powered extraction of structured repair data
 - 🔐 **Secure Authentication**: JWT-based authentication with rate limiting
 - 📊 **Multiple Extraction Types**: 
@@ -19,7 +19,7 @@ A comprehensive speech-to-text and data extraction system designed specifically 
 ## Tech Stack
 
 - **Backend**: Node.js, TypeScript, Express
-- **AI/ML**: OpenAI GPT-4 and Whisper models
+- **AI/ML**: Fal.ai Whisper for speech-to-text, OpenAI GPT-4 for data extraction
 - **Authentication**: JWT with bcrypt password hashing
 - **Validation**: Zod for request validation
 - **File Handling**: Multer for audio file uploads
@@ -29,7 +29,8 @@ A comprehensive speech-to-text and data extraction system designed specifically 
 
 - Node.js >= 18.0.0
 - npm or yarn
-- OpenAI API key
+- Fal.ai API key (for speech-to-text)
+- OpenAI API key (for data extraction)
 
 ## Setup Instructions
 
@@ -54,7 +55,10 @@ NODE_ENV=development
 JWT_SECRET=your-super-secret-jwt-key-here
 JWT_EXPIRES_IN=24h
 
-# OpenAI Configuration (Required)
+# Fal.ai Configuration (Required for speech-to-text)
+FAL_KEY=your-fal-ai-api-key-here
+
+# OpenAI Configuration (Required for data extraction)
 OPENAI_API_KEY=your-openai-api-key-here
 
 # Optional: Alternative Speech-to-Text Services
@@ -128,7 +132,7 @@ Content-Type: multipart/form-data
 
 Form Data:
 - audio: <audio file>
-- model: "whisper-1" | "google" | "azure" (optional, default: "whisper-1")
+- model: "fal-whisper" | "google" | "azure" (optional, default: "fal-whisper")
 - language: "en" (optional)
 - timestamp: true | false (optional, default: true)
 - speakerDiarization: true | false (optional, default: false)
@@ -150,7 +154,7 @@ Form Data:
     "fileName": "repair_recording.mp3",
     "fileSize": 1024000,
     "mimeType": "audio/mpeg",
-    "model": "whisper-1",
+    "model": "fal-whisper",
     "timestamp": "2024-01-15T10:30:00Z"
   }
 }

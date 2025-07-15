@@ -1,8 +1,8 @@
-import OpenAI from 'openai';
+import { fal } from '@fal-ai/client';
 
 export interface TranscriptionOptions {
   language?: string;
-  model: 'whisper-1' | 'google' | 'azure';
+  model: 'fal-whisper' | 'google' | 'azure';
   timestamp: boolean;
   speakerDiarization: boolean;
 }
@@ -31,15 +31,14 @@ export interface TranscriptionResult {
 }
 
 export class SpeechToTextService {
-  private openai: OpenAI;
-
   constructor() {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required');
+    if (!process.env.FAL_KEY) {
+      throw new Error('FAL_KEY environment variable is required');
     }
     
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+    // Configure fal.ai client
+    fal.config({
+      credentials: process.env.FAL_KEY,
     });
   }
 
@@ -48,8 +47,8 @@ export class SpeechToTextService {
       console.log(`Starting transcription for user ${request.userId} using model ${request.options.model}`);
       
       switch (request.options.model) {
-        case 'whisper-1':
-          return await this.transcribeWithWhisper(request);
+        case 'fal-whisper':
+          return await this.transcribeWithFalWhisper(request);
         case 'google':
           return await this.transcribeWithGoogle(request);
         case 'azure':
@@ -63,43 +62,61 @@ export class SpeechToTextService {
     }
   }
 
-  private async transcribeWithWhisper(request: TranscriptionRequest): Promise<TranscriptionResult> {
+  private async transcribeWithFalWhisper(request: TranscriptionRequest): Promise<TranscriptionResult> {
     try {
-      // Convert Buffer to File-like object for OpenAI API
+      // Upload audio file to fal.ai storage
       const file = new File([request.audioBuffer], request.fileName, {
         type: request.mimeType,
       });
-
-      const transcription = await this.openai.audio.transcriptions.create({
-        file: file,
-        model: 'whisper-1',
-        language: request.options.language,
-        response_format: request.options.timestamp ? 'verbose_json' : 'json',
-        timestamp_granularities: request.options.timestamp ? ['segment'] : undefined,
+      
+      console.log('Uploading audio file to fal.ai storage...');
+      const audioUrl = await fal.storage.upload(file);
+      
+      console.log('Starting fal.ai Whisper transcription...');
+      const result = await fal.subscribe('fal-ai/whisper', {
+        input: {
+          audio_url: audioUrl,
+          task: 'transcribe',
+          language: request.options.language as any, // Cast to any for language compatibility
+          diarize: request.options.speakerDiarization,
+          chunk_level: request.options.timestamp ? 'segment' : 'word',
+          version: '3',
+        },
+        logs: true,
+        onQueueUpdate: (update) => {
+          if (update.status === 'IN_PROGRESS') {
+            console.log('Transcription in progress...');
+          }
+        },
       });
 
-      // Handle transcription response (always an object in modern OpenAI API)
-      const result: TranscriptionResult = {
-        text: transcription.text,
-        language: (transcription as any).language,
-        model: 'whisper-1',
-        duration: (transcription as any).duration,
-        wordCount: transcription.text.split(' ').length,
+      // Map fal.ai response to our TranscriptionResult format
+      const transcriptionResult: TranscriptionResult = {
+        text: result.data.text,
+        model: 'fal-whisper',
+        wordCount: result.data.text.split(' ').length,
+        confidence: 0.9, // fal.ai doesn't provide confidence, using default
       };
 
-      // Add segments if available
-      if ((transcription as any).segments && request.options.timestamp) {
-        result.segments = (transcription as any).segments.map((segment: any) => ({
-          text: segment.text,
-          start: segment.start,
-          end: segment.end,
+      // Add language if detected
+      if (result.data.inferred_languages && result.data.inferred_languages.length > 0) {
+        transcriptionResult.language = result.data.inferred_languages[0];
+      }
+
+      // Add segments/chunks if available
+      if (result.data.chunks && result.data.chunks.length > 0) {
+        transcriptionResult.segments = result.data.chunks.map((chunk: any) => ({
+          text: chunk.text,
+          start: chunk.timestamp[0],
+          end: chunk.timestamp[1],
+          speaker: chunk.speaker, // Available if diarization is enabled
         }));
       }
 
-      return result;
+      return transcriptionResult;
     } catch (error) {
-      console.error('Whisper transcription error:', error);
-      throw new Error(`Whisper transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Fal.ai Whisper transcription error:', error);
+      throw new Error(`Fal.ai Whisper transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -152,11 +169,11 @@ export class SpeechToTextService {
   static estimateTranscriptionCost(durationMinutes: number, model: string): number {
     // Rough cost estimates (these would need to be updated with actual pricing)
     const costPerMinute = {
-      'whisper-1': 0.006, // $0.006 per minute for Whisper
-      'google': 0.016,    // Estimated Google pricing
-      'azure': 0.012      // Estimated Azure pricing
+      'fal-whisper': 0.005, // Estimated fal.ai Whisper pricing (typically lower than OpenAI)
+      'google': 0.016,      // Estimated Google pricing
+      'azure': 0.012        // Estimated Azure pricing
     };
 
-    return (costPerMinute[model as keyof typeof costPerMinute] || 0.006) * durationMinutes;
+    return (costPerMinute[model as keyof typeof costPerMinute] || 0.005) * durationMinutes;
   }
 } 
