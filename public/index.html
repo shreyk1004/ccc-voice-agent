@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Agent Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            border: 2px dashed #ddd;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+        .upload-section.dragover {
+            border-color: #007cba;
+            background: #f0f8ff;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .result-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007cba;
+        }
+        .result-section h3 {
+            margin-top: 0;
+            color: #007cba;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            background: #ffe6e6;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .extraction-type {
+            margin: 20px 0;
+        }
+        select {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: block;
+        }
+        .download-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Voice Agent Test Interface</h1>
+        
+        <div class="upload-section" id="uploadSection">
+            <h3>Upload Voice Recording</h3>
+            <p>Drop an audio file here or click to select</p>
+            <input type="file" id="audioFile" accept="audio/*" />
+            <br>
+            <button id="processButton">Process Audio</button>
+            
+            <div class="extraction-type">
+                <label for="extractionType">Extraction Type:</label>
+                <select id="extractionType">
+                    <option value="repair_details">Repair Details</option>
+                    <option value="parts_inventory">Parts Inventory</option>
+                    <option value="labor_hours">Labor Hours</option>
+                    <option value="customer_info">Customer Info</option>
+                    <option value="damage_assessment">Damage Assessment</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            Processing your audio file... This may take a moment.
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            
+            <div class="result-section" id="transcriptionResult">
+                <h3>📝 Transcription Result</h3>
+                <pre id="transcriptionText"></pre>
+            </div>
+
+            <div class="result-section" id="extractionResult">
+                <h3>🔍 Extracted Data</h3>
+                <pre id="extractionText"></pre>
+                <button id="downloadButton" class="download-btn">📥 Download Results</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
