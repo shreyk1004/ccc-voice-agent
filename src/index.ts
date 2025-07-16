@@ -59,11 +59,11 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📝 Health check: http://localhost:${PORT}/health`);
-  console.log(`🎤 Transcription API: http://localhost:${PORT}/api/transcription`);
-  console.log(`🔍 Data extraction API: http://localhost:${PORT}/api/extraction`);
-});
+// app.listen(PORT, () => {
+//   console.log(`🚀 Server running on port ${PORT}`);
+//   console.log(`📝 Health check: http://localhost:${PORT}/health`);
+//   console.log(`🎤 Transcription API: http://localhost:${PORT}/api/transcription`);
+//   console.log(`🔍 Data extraction API: http://localhost:${PORT}/api/extraction`);
+// });
 
 export default app; 
