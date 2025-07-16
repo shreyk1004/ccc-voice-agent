@@ -45,6 +45,11 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'Welcome to the API!' });
+});
+
 // Public routes (no authentication required for testing)
 app.use('/api/auth', authRoutes);
 app.use('/api/transcription', transcriptionRoutes);
