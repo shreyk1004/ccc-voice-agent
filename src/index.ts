@@ -59,12 +59,14 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// Start server
-// app.listen(PORT, () => {
-//   console.log(`🚀 Server running on port ${PORT}`);
-//   console.log(`📝 Health check: http://localhost:${PORT}/health`);
-//   console.log(`🎤 Transcription API: http://localhost:${PORT}/api/transcription`);
-//   console.log(`🔍 Data extraction API: http://localhost:${PORT}/api/extraction`);
-// });
+// Start server only in non-production (local dev)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📝 Health check: http://localhost:${PORT}/health`);
+    console.log(`🎤 Transcription API: http://localhost:${PORT}/api/transcription`);
+    console.log(`🔍 Data extraction API: http://localhost:${PORT}/api/extraction`);
+  });
+}
 
 export default app; 
